@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>For My Bestie 💜</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+section{width:100vw;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center}
+.hidden{display:none}
+
+/* PAGE 1 */
+#page1{background:linear-gradient(135deg,#4e54c8,#8f94fb);color:#fff}
+#startBtn{margin-top:25px;padding:15px 30px;font-size:20px;border:none;border-radius:30px;cursor:pointer;background:#fff;color:#4e54c8;transition:.3s}
+#startBtn:hover{transform:scale(1.1)}
+
+/* PAGE 2 */
+#page2{position:relative;color:white;overflow:hidden;background:linear-gradient(135deg,#000000,#8B0000);}
+#instructions{font-size:18px;margin-bottom:10px;color:#fff;text-align:center;z-index:2;position:relative;}
+#scoreBoard{font-size:28px;margin-bottom:10px;font-weight:bold;color:#ffea00;text-shadow:2px 2px 5px #000;z-index:2;position:relative;}
+#gameArea{position:relative;width:90%;max-width:480px;height:70vh;border-radius:20px;overflow:hidden;background:transparent;box-shadow:0 0 15px rgba(0,0,0,0.3);}
+.emoji{position:absolute;font-size:8vw;top:0;user-select:none;cursor:pointer;transition:transform 0.1s;}
+.bomb{color:red;}
+
+/* PAGE 3 */
+#page3{background:linear-gradient(135deg,#000000,#8B0000);color:#fff;overflow:hidden;position:relative}
+.messageBox{max-width:90%;font-size:5vw;line-height:1.6;background:rgba(255,255,255,.2);padding:20px;border-radius:20px;backdrop-filter:blur(10px);position:relative;z-index:2;opacity:0;animation:fadeIn 2s forwards;text-align:center;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.floatingEmoji{position:absolute;font-size:5vw;min-font-size:20px;opacity:0.8;animation:floatUp 5s linear infinite;}
+@keyframes floatUp{0%{transform:translateY(0) rotate(0deg);}100%{transform:translateY(-100vh) rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<section id="page1">
+<h1>Hey Bestie 💜</h1>
+<p>I made something special just for you...</p>
+<button id="startBtn">CLICK ME...✨</button>
+</section>
+
+<section id="page2" class="hidden">
+<div id="instructions">Tap the ❤️ 💛 💚 💙 💜 ⭐ 🌟 🍓 🍉 🍬 🦄 🍪 🌈to gain points! Avoid bombs 💣!</div>
+<div id="scoreBoard">Score: 0 / 20</div>
+<div id="gameArea"></div>
+</section>
+
+<section id="page3" class="hidden">
+<div class="messageBox">
+<h2 style="color:#ff4da6;">For You 💖</h2>
+<p><span style="color:#fff200;">You are honestly</span> <span style="color:#ff6ec7;">one of the most special</span> <span style="color:#00ffe0;">people in my life.</span></p>
+<p><span style="color:#ff9a9e;">Thank you for every laugh,</span> <span style="color:#fad0c4;">every moment,</span> <span style="color:#ffdd59;">and every memory.</span></p>
+<p style="margin-top:15px;font-size:20px;"><span style="color:#ff4da6;">This little surprise</span> <span style="color:#fff200;">is just to make you smile 😊</span></p>
+<p style="margin-top:15px;font-size:20px; color:#ff6ec7;">— Someone who appreciates you a lot 💕</p>
+</div>
+</section>
+
+<script>
+const page1=document.getElementById('page1');
+const page2=document.getElementById('page2');
+const page3=document.getElementById('page3');
+const startBtn=document.getElementById('startBtn');
+const scoreBoard=document.getElementById('scoreBoard');
+const gameArea=document.getElementById('gameArea');
+
+let score=0;
+const targetScore=20;
+let objects=[];
+let gameRunning=false;
+const emojis=['❤️','💛','💚','💙','💜','⭐','🌟','🍓','🍉','🍬','🦄','🍪','🌈'];
+
+startBtn.onclick=()=>{
+ page1.classList.add('hidden');
+ page2.classList.remove('hidden');
+ startGame();
+};
+
+function tapObject(obj){
+ if(!gameRunning) return;
+ if(obj.isBomb){ score=0; }
+ else{ score++; }
+ scoreBoard.textContent=`Score: ${score} / ${targetScore}`;
+ obj.el.remove();
+ objects=objects.filter(o=>o!==obj);
+ if(score>=targetScore) endGame();
+}
+
+function spawnLoop(){
+ if(!gameRunning) return;
+ const obj=document.createElement('div');
+ const isBomb=Math.random()<0.15;
+ obj.className=isBomb?'emoji bomb':'emoji';
+ obj.textContent=isBomb?'💣':emojis[Math.floor(Math.random()*emojis.length)];
+ gameArea.appendChild(obj);
+ 
+ const objWidth = obj.offsetWidth || 40;
+ obj.style.left = Math.random() * (gameArea.clientWidth - objWidth) + 'px';
+ obj.style.top = Math.random() * 20 + 'px';
+ 
+ const objData={el:obj,isBomb:isBomb};
+ objects.push(objData);
+ obj.onclick=()=>tapObject(objData);
+ setTimeout(spawnLoop,700);
+}
+
+function updateLoop(){
+ if(!gameRunning) return;
+ objects.forEach((o,i)=>{
+   let top=parseFloat(o.el.style.top);
+   top+=2+Math.random()*4;
+   if(top > gameArea.clientHeight - 40){
+     o.el.remove();
+     objects.splice(i,1);
+   } else {
+     o.el.style.top = top+'px';
+   }
+ });
+ requestAnimationFrame(updateLoop);
+}
+
+function startGame(){
+ score=0;
+ scoreBoard.textContent=`Score: ${score} / ${targetScore}`;
+ gameRunning=true;
+ objects=[];
+ spawnLoop();
+ updateLoop();
+}
+
+function endGame(){
+ gameRunning=false;
+ objects.forEach(o=>o.el.remove());
+ page2.classList.add('hidden');
+ page3.classList.remove('hidden');
+ createFloatingEmojis();
+}
+
+function createFloatingEmojis(){
+ const cuteEmojis=['🌸','😻','💖','✨','🌟','🍓','🍉','🍬','🦄','🍪','🌈','🍒'];
+ for(let i=0;i<40;i++){
+   const e=document.createElement('div');
+   e.className='floatingEmoji';
+   e.textContent=cuteEmojis[Math.floor(Math.random()*cuteEmojis.length)];
+   e.style.left=Math.random()*(window.innerWidth-30)+'px';
+   e.style.top=Math.random()*(window.innerHeight-30)+'px';
+   e.style.fontSize=(15+Math.random()*20)+'px';
+   e.style.animationDuration=(3+Math.random()*4)+'s';
+   page3.appendChild(e);
+ }
+}
+</script>
+
+</body>
+</html>
